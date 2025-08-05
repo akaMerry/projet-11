@@ -155,7 +155,9 @@ export function Collapse({
 
       {showMore && (
         <div className="lg:bg-neutral-50 h-full p-5">
-          <p className="text-xs lg:text-lg">{content}</p>
+          <div className="grid">
+            <p className="text-xs lg:text-lg">{content}</p>
+          </div>
         </div>
       )}
     </div>
