@@ -1,4 +1,5 @@
 import type { Route } from "./+types/place-details";
+import { redirect } from "react-router";
 import { useState } from "react";
 import { places } from "~/data/places.json";
 import type { Place } from "~/types/types";
@@ -112,11 +113,7 @@ function Rating({ place }: { place: Place }) {
   return (
     <div className="grid grid-cols-5 items-center gap-1 lg:gap-0 lg:justify-items-end">
       {rate.map((r) => (
-        <img
-          className="h-3 lg:h-6"
-          src={r <= rating ? star : starInactive}
-          alt={"note " + place.rating + "/5"}
-        />
+        <img className="h-3 lg:h-6" src={r <= rating ? star : starInactive} />
       ))}
     </div>
   );
@@ -154,28 +151,34 @@ export function Collapse({
       </button>
 
       {showMore && (
-        <div className="lg:bg-neutral-50 h-full p-5">
-          <div className="grid">
-            <p className="text-xs lg:text-lg">{content}</p>
-          </div>
+        <div className="lg:bg-neutral-50 h-full p-5 text-xs lg:text-lg">
+          {content}
         </div>
       )}
     </div>
   );
 }
 
-export default function Details(props: Route.ComponentProps) {
+export function loader(props: Route.ComponentProps) {
   // thisPlace est le lieu qui correspond à l'id affichée dans l'URL
-  const thisPlace = places.find((p) => p.id === props.params.id);
+  let thisPlace = places.find((p) => p.id === props.params.id);
+  if (!thisPlace) {
+    return redirect("/error");
+  }
+  return thisPlace;
+}
+
+export default function Details({ loaderData }: Route.ComponentProps) {
+  const thisPlace = loaderData;
   return (
     <div id="details" className="min-w-full">
       <Gallery place={thisPlace} />
-      <div className="flex flex-col lg:flex-row justify-between mt-5 mb-5">
+      <div className="flex flex-col md:flex-row justify-between mt-5 mb-5">
         <div className="flex w-fit h-fit flex-col">
           <Title place={thisPlace} />
           <Tags place={thisPlace} />
         </div>
-        <div className="flex flex-row-reverse lg:flex-col justify-between mt-2">
+        <div className="flex flex-row-reverse md:flex-col justify-between mt-2">
           <Host place={thisPlace} />
           <Rating place={thisPlace} />
         </div>
@@ -185,7 +188,12 @@ export default function Details(props: Route.ComponentProps) {
           <Collapse title={"Description"} content={thisPlace?.description} />
         </div>
         <div className="h-full">
-          <Collapse title={"Équipements"} content={thisPlace?.equipments} />
+          <Collapse
+            title={"Équipements"}
+            content={thisPlace?.equipments.map((eq) => (
+              <li className="list-none">{eq}</li>
+            ))}
+          />
         </div>
       </div>
     </div>
