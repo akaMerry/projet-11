@@ -13,11 +13,11 @@ function Gallery({ place }: { place: Place }) {
 
   const pictures = place.pictures;
 
-  function handleNextClick() {
+  function handleNext() {
     setIndex((index + 1) % pictures.length);
   }
 
-  function handlePreviousClick() {
+  function handlePrevious() {
     setIndex((index - 1 + pictures.length) % pictures.length);
   }
 
@@ -33,10 +33,11 @@ function Gallery({ place }: { place: Place }) {
       {pictures.length === 1 ? null : (
         <div className="absolute inset-0 flex items-center max-w-full justify-center">
           <div className="grid grid-cols-2 lg:grid-cols-3 items-center justify-items-center w-full h-full p-4 z-20">
-            <div className="flex col-span-1 flex-start min-h-full w-full items-center justify-start">
+            <div className="flex col-span-1 flex-start h-full w-full items-center justify-start">
               <button
-                className="flex cursor-pointer justify-start"
-                onClick={handlePreviousClick}
+                className="flex cursor-pointer justify-start opacity-75 transition duration-300 ease-in-out hover:scale-110 hover:opacity-100"
+                onClick={handlePrevious}
+                onKeyUp={handlePrevious}
                 tabIndex={0}
               >
                 <img className="w-1/3 md:w-1/2 lg:w-full" src={chevronLeft} />
@@ -49,8 +50,9 @@ function Gallery({ place }: { place: Place }) {
             </div>
             <div className="flex col-span-1 flex-start min-h-full w-full items-center justify-end">
               <button
-                className="flex cursor-pointer justify-end"
-                onClick={handleNextClick}
+                className="flex cursor-pointer justify-end opacity-75 transition duration-300 ease-in-out hover:scale-110 hover:opacity-100"
+                onClick={handleNext}
+                onKeyUp={handleNext}
                 tabIndex={0}
               >
                 <img className="w-1/3 md:w-1/2 lg:w-full" src={chevronRight} />
@@ -128,33 +130,46 @@ export function Collapse({
 }) {
   const [showMore, setShowMore] = useState(false);
 
-  function handleMoreClick() {
+  function handleMore() {
     setShowMore(!showMore);
   }
 
   return (
     <div className="flex flex-col h-full w-full">
       <button
-        className="h-7.5 lg:h-13.5 cursor-pointer flex items-center justify-between p-2 lg:p-4 bg-red-400 rounded-md"
-        onClick={handleMoreClick}
+        className="group h-7.5 lg:h-13.5 cursor-pointer flex items-center justify-between p-2 lg:p-4 bg-red-400 rounded-md"
+        onClick={handleMore}
+        onKeyUp={handleMore}
         tabIndex={0}
       >
         <p className="font-semibold text-white text-xs lg:text-lg">{title}</p>
         <img
           className={
             showMore
-              ? "h-full object-fit rotate-90 transition"
-              : "h-full object-fit -rotate-90 transition"
+              ? "h-full object-fit rotate-90 transitio duration-300"
+              : "h-full object-fit -rotate-90 transition duration-300"
           }
           src={chevronLeft}
         />
       </button>
 
-      {showMore && (
-        <div className="lg:bg-neutral-50 h-full p-5 text-xs lg:text-lg">
+      <div
+        className={
+          showMore
+            ? "lg:bg-neutral-50 transition-tansformation duration-300 opacity-100 h-full"
+            : "lg:bg-neutral-50 transition-tansformation duration-300 opacity-0 h-0"
+        }
+      >
+        <p
+          className={
+            showMore
+              ? "transition-tansformation duration-300 p-5 text-xs lg:text-lg"
+              : "transition-tansformation duration-300 hidden"
+          }
+        >
           {content}
-        </div>
-      )}
+        </p>
+      </div>
     </div>
   );
 }

@@ -35,7 +35,7 @@ function PlaceCard({ place }: { place: Place }) {
   return (
     <Link
       to={href("/places/:id", { id: place.id })}
-      className="flex relative w-83.5 lg:w-85 h-63.5 lg:h-85"
+      className="flex relative w-83.5 lg:w-85 h-63.5 lg:h-85 transition duration-300 ease-in-out hover:scale-105"
     >
       <img
         src={place.cover}
