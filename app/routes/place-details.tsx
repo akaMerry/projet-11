@@ -2,16 +2,14 @@ import type { Route } from "./+types/place-details";
 import { redirect } from "react-router";
 import { useState } from "react";
 import { places } from "~/data/places.json";
-import type { Place } from "~/types/types";
+import { Collapse } from "../components/collapse";
 import chevronRight from "~/assets/chevron_right.svg";
 import chevronLeft from "~/assets/chevron_left.svg";
 import star from "~/assets/star.svg";
 import starInactive from "~/assets/star-inactive.svg";
 
-function Gallery({ place }: { place: Place }) {
+function Gallery({ pictures }: { pictures: string[] }) {
   const [index, setIndex] = useState(0);
-
-  const pictures = place.pictures;
 
   function handleNext() {
     setIndex((index + 1) % pictures.length);
@@ -28,7 +26,7 @@ function Gallery({ place }: { place: Place }) {
       <img
         className="w-full h-full rounded-3xl object-cover"
         src={url}
-        alt={"Galerie de photos : " + place.title}
+        alt={"Galerie de photos"}
       />
       {pictures.length === 1 ? null : (
         <div className="absolute inset-0 flex items-center max-w-full justify-center">
@@ -65,19 +63,16 @@ function Gallery({ place }: { place: Place }) {
   );
 }
 
-function Title({ place }: { place: Place }) {
+function Title({ h1, h2 }: { h1: string; h2: string }) {
   return (
     <div className="w-full max-w-310 h-full">
-      <h1 className="text-lg lg:text-4xl text-red-400 font-medium">
-        {place.title}
-      </h1>
-      <h2 className="pt-1 text-sm lg:text-lg font-medium">{place.location}</h2>
+      <h1 className="text-lg lg:text-4xl text-red-400 font-medium">{h1}</h1>
+      <h2 className="pt-1 text-sm lg:text-lg font-medium">{h2}</h2>
     </div>
   );
 }
 
-function Tags({ place }: { place: Place }) {
-  const tags = place.tags;
+function Tags({ tags }: { tags: string[] }) {
   return (
     <div className="w-full h-fit max-w-310 flex flex-row flex-wrap lg:mt-2">
       {tags.map((tag) => (
@@ -91,85 +86,36 @@ function Tags({ place }: { place: Place }) {
   );
 }
 
-function Host({ place }: { place: Place }) {
+function Host({ name, picture }: { name: string; picture: string }) {
   return (
     <div className="flex w-fit gap-2 items-center">
       <div className="flex">
         <p className="text-red-400 font-medium text-xs lg:text-lg text-right wrap-break-word max-x-23.5">
-          {place.host.name}
+          {name}
         </p>
       </div>
       <div className="flex h-8 lg:h-16 w-8 lg:w-16 rounded-full">
         <img
           className="object-cover w-full h-full rounded-full"
-          src={place.host.picture}
+          src={picture}
         ></img>
       </div>
     </div>
   );
 }
 
-function Rating({ place }: { place: Place }) {
+function Rating({ rating }: { rating: string }) {
   let rate = [1, 2, 3, 4, 5];
-  let rating = parseInt(place.rating);
+  let parseRating = parseInt(rating);
   return (
     <div className="grid grid-cols-5 items-center gap-1 lg:gap-0 lg:justify-items-end">
       {rate.map((r) => (
-        <img className="h-3 lg:h-6" src={r <= rating ? star : starInactive} />
-      ))}
-    </div>
-  );
-}
-
-export function Collapse({
-  content,
-  title,
-}: {
-  content: string;
-  title: string;
-}) {
-  const [showMore, setShowMore] = useState(false);
-
-  function handleMore() {
-    setShowMore(!showMore);
-  }
-
-  return (
-    <div className="flex flex-col h-full w-full">
-      <button
-        className="group h-7.5 lg:h-13.5 cursor-pointer flex items-center justify-between p-2 lg:p-4 bg-red-400 rounded-md"
-        onClick={handleMore}
-        onKeyUp={handleMore}
-        tabIndex={0}
-      >
-        <p className="font-semibold text-white text-xs lg:text-lg">{title}</p>
         <img
-          className={
-            showMore
-              ? "h-full object-fit rotate-90 transitio duration-300"
-              : "h-full object-fit -rotate-90 transition duration-300"
-          }
-          src={chevronLeft}
+          className="h-3 lg:h-6"
+          src={r <= parseRating ? star : starInactive}
+          key={`rating-star-${r}`}
         />
-      </button>
-
-      <div
-        className={
-          showMore
-            ? "lg:bg-neutral-50 transition-tansformation duration-300 opacity-100 h-full"
-            : "lg:bg-neutral-50 transition-tansformation duration-300 opacity-0 h-0"
-        }
-      >
-        <p
-          className={
-            showMore
-              ? "transition-tansformation duration-300 p-5 text-xs lg:text-lg"
-              : "transition-tansformation duration-300 hidden"
-          }
-        >
-          {content}
-        </p>
-      </div>
+      ))}
     </div>
   );
 }
@@ -177,38 +123,50 @@ export function Collapse({
 export function loader(props: Route.ComponentProps) {
   // thisPlace est le lieu qui correspond à l'id affichée dans l'URL
   let thisPlace = places.find((p) => p.id === props.params.id);
+
+  // si l'id ne correspond à rien, l'utilisateur est redirigé vers la page d'erreur
   if (!thisPlace) {
-    return redirect("/error");
+    throw redirect("/error");
   }
   return thisPlace;
 }
 
 export default function Details({ loaderData }: Route.ComponentProps) {
   const thisPlace = loaderData;
+  // ci-dessous, une alternative au loader côté client :
+  // const navigate = useNavigate();
+
+  // useEffect(() => {
+  //   if (!thisPlace) {
+  //     navigate(href("/error"));
+  //   }
+  // }, [thisPlace]);
+
   return (
     <div id="details" className="min-w-full">
-      <Gallery place={thisPlace} />
+      <Gallery pictures={thisPlace.pictures} />
       <div className="flex flex-col md:flex-row justify-between mt-5 mb-5">
         <div className="flex w-fit h-fit flex-col">
-          <Title place={thisPlace} />
-          <Tags place={thisPlace} />
+          <Title h1={thisPlace.title} h2={thisPlace.location} />
+          <Tags tags={thisPlace.tags} />
         </div>
         <div className="flex flex-row-reverse md:flex-col justify-between mt-2">
-          <Host place={thisPlace} />
-          <Rating place={thisPlace} />
+          <Host name={thisPlace.host.name} picture={thisPlace.host.picture} />
+          <Rating rating={thisPlace.rating} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4 mb-5 lg:mb-10">
         <div className="h-full">
-          <Collapse title={"Description"} content={thisPlace?.description} />
+          <Collapse title={"Description"}>{thisPlace.description}</Collapse>
         </div>
         <div className="h-full">
-          <Collapse
-            title={"Équipements"}
-            content={thisPlace?.equipments.map((eq) => (
-              <li className="list-none">{eq}</li>
-            ))}
-          />
+          <Collapse title={"Équipements"}>
+            <ul>
+              {thisPlace.equipments.map((eq) => (
+                <li className="list-none">{eq}</li>
+              ))}
+            </ul>
+          </Collapse>
         </div>
       </div>
     </div>
